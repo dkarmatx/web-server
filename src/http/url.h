@@ -9,8 +9,11 @@ namespace http {
 using UrlError = const char *;
 
 constexpr UrlError NO_ERROR                 = nullptr;
-constexpr UrlError MISSING_SCHEME_ERROR     = "missing porotocol scheme";
-constexpr UrlError ROOTLESS_PATH_ERROR      = "rootles path is forbidden in request URI";
+constexpr UrlError EMPTY_SCHEME_ERROR       = "a";
+constexpr UrlError INVALID_SCHEME_ERROR     = "b";
+constexpr UrlError ROOTLESS_PATH_ERROR      = "c";
+constexpr UrlError EMPTY_OPAQUE_ERROR       = "d";
+constexpr UrlError INVALID_OPAQUE_ERROR     = "e";
 
 /**
  *  Structure which contains all URL parts.

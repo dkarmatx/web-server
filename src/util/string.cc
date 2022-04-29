@@ -4,14 +4,6 @@
 #include <cctype>
 #include <string_view>
 
-auto isAlpha(const int c) noexcept -> bool {
-    return ('a' <= c && c <= 'z') ||
-           ('A' <= c && c <= 'Z');
-}
-
-auto isNum(const int c) noexcept -> bool {
-    return '0' <= c && c <= '9';
-}
 
 auto toUpper(const std::string& s) noexcept -> std::string {
     std::string res(s);

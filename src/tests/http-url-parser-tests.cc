@@ -84,5 +84,5 @@ TEST(HttpUrlParserTest, EmptyScheme) {
 
     auto r = parseRequestURL(":hello.com/hey_there#frag");
     ASSERT_TRUE(r.isError());
-    ASSERT_EQ(r.error(), MISSING_SCHEME_ERROR);
+    ASSERT_EQ(r.error(), EMPTY_SCHEME_ERROR);
 }

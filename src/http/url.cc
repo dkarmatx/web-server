@@ -18,6 +18,51 @@ auto URL::operator==(const URL& rhs) const noexcept -> bool {
 
 namespace {
 
+constexpr inline
+auto isAlphaSym(const char c) -> bool {
+    return ('a' <= c && c <= 'z') ||
+           ('A' <= c && c <= 'Z');
+}
+
+constexpr inline
+auto isDigitSym(const char c) -> bool {
+    return '0' <= c && c <= '9';
+}
+
+constexpr inline
+auto isUnreservedSym(const char c) -> bool {
+    return isAlphaSym(c) ||
+           isDigitSym(c) ||
+           c == '-' ||
+           c == '.' ||
+           c == '_' ||
+           c == '~';
+}
+
+constexpr inline
+auto isSubdelimSym(const char c) -> bool {
+    return c == '!' ||
+           c == '$' ||
+           c == '&' ||
+           c == '\'' ||
+           c == '(' ||
+           c == ')' ||
+           c == '*' ||
+           c == '+' ||
+           c == ',' ||
+           c == ';' ||
+           c == '=';
+}
+
+constexpr inline
+auto isPcharSym(const char c) -> bool {
+    return isUnreservedSym(c) ||
+           isSubdelimSym(c) ||
+           c == '%' ||
+           c == ':' ||
+           c == '@';
+}
+
 /**
  * Try to parse scheme from raw url string.
  * Returns:
@@ -28,26 +73,26 @@ namespace {
 auto getScheme(std::string_view raw_url) noexcept
     -> std::tuple<std::string_view, std::string_view, UrlError> {
 
-    for (size_t i = 0; i < raw_url.size(); ++i) {
+    size_t i = 0;
+    for (; i < raw_url.size(); ++i) {
         const char c = raw_url[i];
-
-        if        (isAlpha(c)) {
-            // valid url character
-            continue;
-        } else if ((isNum(c) || c == '+' || c == '-' || c == '.') && i == 0) {
-            // valid url character, but it can't be the first symbol
-            return { "", raw_url, NO_ERROR };
-        } else if (c == ':') {
-            // must be next character after the scheme
-            if (i == 0) {
-                return {"", "", MISSING_SCHEME_ERROR};
-            }
-            return { raw_url.substr(0, i), raw_url.substr(i+1), NO_ERROR };
-        } else {
-            // there is no valid scheme
-            return { "", raw_url, NO_ERROR };
+        if (!(isAlphaSym(c) || isDigitSym(c) || c == '+' || c == '-' || c == '.')) {
+            break;
         }
     }
+
+    if (i >= raw_url.size()) {
+        return { "", raw_url, NO_ERROR };
+    }
+
+    if (raw_url[i] == ':') {
+        if (i == 0)
+            return { "", "", EMPTY_SCHEME_ERROR };
+        if (!isAlphaSym(raw_url[0]))
+            return { "", raw_url, NO_ERROR };
+        return { raw_url.substr(0, i), raw_url.substr(i+1), NO_ERROR };
+    }
+
     return { "", raw_url, NO_ERROR };
 }
 
@@ -107,15 +152,35 @@ auto parseAuthority(std::string_view str) noexcept
  *  Set a scheme and validate it
  */
 auto URL::setScheme(std::string_view s) noexcept -> UrlError {
-    this->scheme = s;
+    if (s.empty()) {
+        return EMPTY_SCHEME_ERROR;
+    }
+
+    for (auto c: s) {
+        if (!(isAlphaSym(c) || isDigitSym(c) || c == '+' || c == '-' || c == '.'))
+            return INVALID_SCHEME_ERROR;
+    }
+
+    if (!isAlphaSym(s[0])) {
+        return INVALID_SCHEME_ERROR;
+    }
+
+    this->scheme = toLower(s);
     return NO_ERROR;
 }
 
 /**
  *  Set an opaque and validate it
  */
-auto URL::setOpaque(std::string_view o) noexcept -> UrlError {
-    this->opaque = o;
+auto URL::setOpaque(std::string_view s) noexcept -> UrlError {
+    if (s.empty())
+        return EMPTY_OPAQUE_ERROR;
+
+    for (auto c: s) {
+        if (!isPcharSym(c))
+            return INVALID_OPAQUE_ERROR;
+    }
+    this->opaque = s;
     return NO_ERROR;
 }
 
@@ -169,7 +234,9 @@ auto URL::setFragment(std::string_view f) noexcept -> UrlError {
 auto parseRequestURL(const std::string& raw_url) noexcept -> Expected<URL, UrlError> {
     URL url;
 
-    if (raw_url == "*") {
+    if (raw_url.empty()) {
+        return { UNEXPECTED, ROOTLESS_PATH_ERROR };
+    } else if (raw_url == "*") {
         url.path = "*";
     } else {
         std::string_view to_parse = raw_url;
@@ -191,9 +258,7 @@ auto parseRequestURL(const std::string& raw_url) noexcept -> Expected<URL, UrlEr
             if (error != NO_ERROR) {
                 return { UNEXPECTED, error };
             }
-            if ((error = url.setScheme(std::string(scheme_str))) != NO_ERROR) {
-                return { UNEXPECTED, error };
-            }
+            url.scheme = toLower(scheme_str);
             to_parse = remaining;
         }
 
