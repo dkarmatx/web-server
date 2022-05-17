@@ -8,25 +8,21 @@
 
 namespace http {
 
-const static auto alphaCset       = CharSet("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-const static auto digitCset       = CharSet("0123456789");
-const static auto subdelimsCset   = CharSet("!$&'()*+,;=");
-const static auto unreservedCset  = CharSet("-._~") + alphaCset + digitCset;
-const static auto phcarCset       = CharSet("%:@") + unreservedCset + subdelimsCset;
+static const auto alphaCset       = CharSet("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+static const auto digitCset       = CharSet("0123456789");
+static const auto subdelimsCset   = CharSet("!$&'()*+,;=");
+static const auto unreservedCset  = CharSet("-._~") + alphaCset + digitCset;
+static const auto phcarCset       = CharSet("%:@") + unreservedCset + subdelimsCset;
+static const auto pathCset        = CharSet("/") + phcarCset;
+static const auto schemeCset      = CharSet("+-.") + alphaCset + digitCset;
+static const auto userinfoCset    = CharSet("%:") + unreservedCset + subdelimsCset;
+static const auto queryCset       = CharSet("/?[]{}") + phcarCset;
+static const auto regnameCset     = CharSet("%") + unreservedCset + subdelimsCset;
 
-const static auto opaqueCset      = phcarCset + CharSet("/");
-const static auto& pathCset       = opaqueCset;
-const static auto schemeCset      = CharSet("+-.") + alphaCset + digitCset;
-const static auto userinfoCset    = CharSet("%:") + unreservedCset + subdelimsCset;
-const static auto queryCset       = CharSet("/?[]") + phcarCset;
+static const auto& opaqueCset     = pathCset;
 
-const static auto regnameCset     = unreservedCset + subdelimsCset + CharSet("%");
-const static auto& portCset       = digitCset;
 
-/**
- *  Compares URL structures.
- */
-auto URL::operator==(const URL& rhs) const noexcept -> bool {
+auto URL::operator==(const URL& rhs) const -> bool {
     return this->scheme == rhs.scheme &&
            this->opaque == rhs.opaque &&
            this->userinfo == rhs.userinfo &&
@@ -36,10 +32,7 @@ auto URL::operator==(const URL& rhs) const noexcept -> bool {
            this->fragment == rhs.fragment;
 }
 
-/**
- *  Set a scheme and validate it
- */
-auto URL::setScheme(std::string_view s) noexcept -> UrlError {
+auto URL::setScheme(std::string_view s) -> UrlError {
     if (s.empty()) {
         return EMPTY_SCHEME_ERROR;
     }
@@ -56,11 +49,7 @@ auto URL::setScheme(std::string_view s) noexcept -> UrlError {
     return NO_ERROR;
 }
 
-/**
- *  Set an opaque and validate it.
- *  Function doesn't validate url-pct-encoding.
- */
-auto URL::setOpaque(std::string_view s) noexcept -> UrlError {
+auto URL::setOpaque(std::string_view s) -> UrlError {
     if (!opaqueCset.has(s))
         return INVALID_OPAQUE_ERROR;
 
@@ -68,11 +57,7 @@ auto URL::setOpaque(std::string_view s) noexcept -> UrlError {
     return NO_ERROR;
 }
 
-/**
- *  Set an userinfo and validate it.
- *  Function doesn't validate url-pct-encoding.
- */
-auto URL::setUserinfo(std::string_view u) noexcept -> UrlError {
+auto URL::setUserinfo(std::string_view u) -> UrlError {
     if (!userinfoCset.has(u))
         return INVALID_USERINFO_ERROR;
 
@@ -80,10 +65,7 @@ auto URL::setUserinfo(std::string_view u) noexcept -> UrlError {
     return NO_ERROR;
 }
 
-/**
- *  Set a host and validate it
- */
-auto URL::setHost(std::string_view h) noexcept -> UrlError {
+auto URL::setHost(std::string_view h) -> UrlError {
     // return INVALID_HOSTNAME_ERROR;
     // return EMPTY_PORT_ERROR;
     // return INVALID_PORT_ERROR;
@@ -94,12 +76,7 @@ auto URL::setHost(std::string_view h) noexcept -> UrlError {
     return NO_ERROR;
 }
 
-/**
- *  Set a path and validate it. If path is empty, then
- *  this object's path is set to "/". Rootless path isn't allowed.
- *  Function doesn't validate url-pct-encoding.
- */
-auto URL::setPath(std::string_view p) noexcept -> UrlError {
+auto URL::setPath(std::string_view p) -> UrlError {
     if (p.empty())
         return ROOTLESS_PATH_ERROR;
 
@@ -116,11 +93,7 @@ auto URL::setPath(std::string_view p) noexcept -> UrlError {
     return NO_ERROR;
 }
 
-/**
- *  Set a query and validate it.
- *  Function doesn't validate url-pct-encoding.
- */
-auto URL::setQuery(std::string_view q) noexcept -> UrlError {
+auto URL::setQuery(std::string_view q) -> UrlError {
     for (auto c: q) {
         if (!queryCset.has(c)) {
             return INVALID_QUERY_ERROR;
@@ -130,14 +103,7 @@ auto URL::setQuery(std::string_view q) noexcept -> UrlError {
     return NO_ERROR;
 }
 
-/**
- * Parse URL from a string. Url could be absolute (starts with a protocol scheme) or
- * relative (starts with a path or an opaque).
- *
- * Returns:
- *  an URL structure or a description of the parsing error
- */
-auto parseRequestURL(const std::string&) noexcept -> Expected<URL, UrlError> {
+auto parseRequestURL(const std::string&) -> Expected<URL, UrlError> {
     return URL{};
 }
 

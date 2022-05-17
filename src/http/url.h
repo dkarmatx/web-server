@@ -33,16 +33,16 @@ struct URL {
     std::string     query;
     std::string     fragment;  // unused usually
 
-    bool operator==(const URL& rhs) const noexcept;
+    bool operator==(const URL& rhs) const;
 
-    UrlError setScheme(std::string_view scheme) noexcept;
-    UrlError setOpaque(std::string_view opaque) noexcept;
-    UrlError setUserinfo(std::string_view usrinfo) noexcept;
-    UrlError setHost(std::string_view host) noexcept;
-    UrlError setPath(std::string_view path) noexcept;
-    UrlError setQuery(std::string_view query) noexcept;
+    UrlError setScheme(std::string_view scheme);
+    UrlError setOpaque(std::string_view opaque);
+    UrlError setUserinfo(std::string_view usrinfo);
+    UrlError setHost(std::string_view host);
+    UrlError setPath(std::string_view path);
+    UrlError setQuery(std::string_view query);
 };
 
-Expected<URL, UrlError> parseRequestURL(const std::string& raw_url) noexcept;
+Expected<URL, UrlError> parseRequestURL(const std::string& raw_url);
 
 }  // namespace http

@@ -6,10 +6,6 @@ include_dir     = ['src/']
 cpp_args        = ['-Wall', '-Werror', '-Wextra']
 
 srcs = [
-    'src/http/common.h',
-    'src/http/header.h', 'src/http/header.cc',
-    'src/http/message.h', 'src/http/message.cc',
-    'src/http/writer.h', 'src/http/writer.cc',
     'src/http/url.h', 'src/http/url.cc',
 
     'src/util/expected.h',

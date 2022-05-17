@@ -1,5 +1,9 @@
-- make URL set methods
-- make URL toString methods
-- cover http::Headers with unit-tests
-- cover http::Headers with comments
-- cover http::URL with unit-tests
+- make URL setHost method
+- make URL toString method
+- make URL parse method
+
+- cover charset with docs and UT
+
+- cover util with docs
+
+- make percent encoder/decoder

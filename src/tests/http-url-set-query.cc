@@ -16,6 +16,7 @@ TEST(Http_Url_SetQuery, ValidQuery) {
     tester("asdasd");
     tester("");
     tester("???asdsd");
+    tester("params={%22type%22:%22foo%22,%22color%22:%22green%22}");
 }
 
 TEST(Http_Url_SetQuery, InvalidQuery) {
@@ -32,6 +33,6 @@ TEST(Http_Url_SetQuery, InvalidQuery) {
     };
 
     tester("str with spaces");
-    tester("query++with[]fuck");
     tester("lol###");
+    tester("params={\"type\":\"foo\",\"color\":\"green\"}");
 }
