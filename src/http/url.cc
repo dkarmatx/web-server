@@ -83,10 +83,8 @@ auto URL::setPath(std::string_view p) -> UrlError {
     if (p.front() != '/')
         return ROOTLESS_PATH_ERROR;
     
-    for (auto c: p) {
-        if (!pathCset.has(c)) {
-            return INVALID_PATH_ERROR;
-        }
+    if (!pathCset.has(p)) {
+        return INVALID_PATH_ERROR;
     }
 
     this->path = p;
@@ -94,10 +92,8 @@ auto URL::setPath(std::string_view p) -> UrlError {
 }
 
 auto URL::setQuery(std::string_view q) -> UrlError {
-    for (auto c: q) {
-        if (!queryCset.has(c)) {
-            return INVALID_QUERY_ERROR;
-        }
+    if (!queryCset.has(q)) {
+        return INVALID_QUERY_ERROR;
     }
     this->query = q;
     return NO_ERROR;
